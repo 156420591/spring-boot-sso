@@ -1,6 +1,10 @@
 server:
-    port: 8083
+  port: 8083
+  servlet:
     context-path: /app2
+spring:
+  main:
+    allow-bean-definition-overriding: true
 security:
   basic:
     enabled: false

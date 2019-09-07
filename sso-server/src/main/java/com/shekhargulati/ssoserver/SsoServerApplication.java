@@ -3,16 +3,17 @@ package com.shekhargulati.ssoserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
 @SpringBootApplication
@@ -24,6 +25,7 @@ public class SsoServerApplication {
     }
 
     @Configuration
+    @Order(1)
     protected static class LoginConfig extends WebSecurityConfigurerAdapter {
 
         @Override
@@ -41,22 +43,28 @@ public class SsoServerApplication {
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.inMemoryAuthentication()
                     .withUser("user")
-                    .password("password")
+                    .password(passwordEncoder().encode("password"))
                     .roles("USER");
+        }
+        
+        @Bean
+        public BCryptPasswordEncoder passwordEncoder(){ 
+            return new BCryptPasswordEncoder(); 
         }
     }
 
     @Configuration
     @EnableAuthorizationServer
     protected static class OAuth2Config extends AuthorizationServerConfigurerAdapter {
-        @Autowired
-        private AuthenticationManager authenticationManager;
+
+    	@Autowired
+    	private BCryptPasswordEncoder passwordEncoder;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
             clients.inMemory()
                     .withClient("foo")
-                    .secret("bar")
+                    .secret(passwordEncoder.encode("bar"))
                     .authorizedGrantTypes("authorization_code", "refresh_token", "password")
                     .scopes("user_info")
                     .autoApprove(true);
@@ -66,12 +74,9 @@ public class SsoServerApplication {
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
             oauthServer
                     .tokenKeyAccess("permitAll()")
-                    .checkTokenAccess("isAuthenticated()");
+                    .checkTokenAccess("isAuthenticated()")
+                    .allowFormAuthenticationForClients();
         }
 
-        @Override
-        public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-            endpoints.authenticationManager(authenticationManager);
-        }
     }
 }

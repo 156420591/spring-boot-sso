@@ -1,6 +1,10 @@
 server:
-    port: 8082
+  port: 8082
+  servlet:
     context-path: /app1
+spring:
+  main:
+    allow-bean-definition-overriding: true
 security:
   basic:
     enabled: false
