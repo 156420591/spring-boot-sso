@@ -10,11 +10,14 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 @SpringBootApplication
 @EnableResourceServer
@@ -27,6 +30,11 @@ public class SsoServerApplication {
     @Configuration
     @Order(1)
     protected static class LoginConfig extends WebSecurityConfigurerAdapter {
+    	@Autowired
+    	PasswordEncoder passwordEncoder;
+
+    	@Autowired
+    	MyUserDetailService myUserDetailService;
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -41,16 +49,13 @@ public class SsoServerApplication {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            auth.inMemoryAuthentication()
-                    .withUser("user")
-                    .password(passwordEncoder().encode("password"))
-                    .roles("USER");
+        	auth.userDetailsService(this.myUserDetailService);
+//            auth.inMemoryAuthentication()
+//                    .withUser("user")
+//                    .password(passwordEncoder.encode("password"))
+//                    .roles("USER");
         }
-        
-        @Bean
-        public BCryptPasswordEncoder passwordEncoder(){ 
-            return new BCryptPasswordEncoder(); 
-        }
+
     }
 
     @Configuration
@@ -58,7 +63,7 @@ public class SsoServerApplication {
     protected static class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     	@Autowired
-    	private BCryptPasswordEncoder passwordEncoder;
+    	private PasswordEncoder passwordEncoder;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
@@ -67,7 +72,10 @@ public class SsoServerApplication {
                     .secret(passwordEncoder.encode("bar"))
                     .authorizedGrantTypes("authorization_code", "refresh_token", "password")
                     .scopes("user_info")
-                    .autoApprove(true);
+                    .autoApprove(true)
+                    .accessTokenValiditySeconds(60)
+                    .refreshTokenValiditySeconds(60)
+                    ;
         }
 
         @Override
@@ -78,5 +86,17 @@ public class SsoServerApplication {
                     .allowFormAuthenticationForClients();
         }
 
+//    	@Override
+//    	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+//            DefaultTokenServices tokenServices = new DefaultTokenServices();
+//            tokenServices.setTokenStore(endpoints.getTokenStore());
+//            tokenServices.setSupportRefreshToken(true);
+//            tokenServices.setClientDetailsService(endpoints.getClientDetailsService());
+//            tokenServices.setTokenEnhancer(endpoints.getTokenEnhancer());
+//            tokenServices.setAccessTokenValiditySeconds(60);
+//            tokenServices.setRefreshTokenValiditySeconds(60);
+//
+//            endpoints.tokenServices(tokenServices);
+//    	}
     }
 }
