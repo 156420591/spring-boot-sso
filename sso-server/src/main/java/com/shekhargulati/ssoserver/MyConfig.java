@@ -15,7 +15,8 @@ public class MyConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
 //    	return new BCryptPasswordEncoder();
-        return new SCryptPasswordEncoder();
+//        return new SCryptPasswordEncoder();
+        return new MySha256PasswordEncoder();
 //        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
