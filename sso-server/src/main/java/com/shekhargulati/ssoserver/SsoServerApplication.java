@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -30,11 +31,14 @@ public class SsoServerApplication {
     @Configuration
     @Order(1)
     protected static class LoginConfig extends WebSecurityConfigurerAdapter {
-    	@Autowired
-    	PasswordEncoder passwordEncoder;
+//    	@Autowired
+//    	PasswordEncoder passwordEncoder;
+//
+//    	@Autowired
+//    	MyUserDetailService myUserDetailService;
 
     	@Autowired
-    	MyUserDetailService myUserDetailService;
+    	AuthenticationProvider myAuthenticationProvider;
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -49,7 +53,9 @@ public class SsoServerApplication {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        	auth.userDetailsService(this.myUserDetailService);
+        	auth.authenticationProvider(this.myAuthenticationProvider);
+//        	auth.userDetailsService(this.myUserDetailService);
+
 //            auth.inMemoryAuthentication()
 //                    .withUser("user")
 //                    .password(passwordEncoder.encode("password"))
