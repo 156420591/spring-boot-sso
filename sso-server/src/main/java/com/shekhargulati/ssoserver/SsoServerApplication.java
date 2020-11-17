@@ -33,7 +33,6 @@ public class SsoServerApplication {
     protected static class LoginConfig extends WebSecurityConfigurerAdapter {
 //    	@Autowired
 //    	PasswordEncoder passwordEncoder;
-//
 //    	@Autowired
 //    	MyUserDetailService myUserDetailService;
 
@@ -54,6 +53,10 @@ public class SsoServerApplication {
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         	auth.authenticationProvider(this.myAuthenticationProvider);
+
+        	//equal to this
+//        	auth.userDetailsService(this.myUserDetailService).passwordEncoder(this.passwordEncoder);
+
 //        	auth.userDetailsService(this.myUserDetailService);
 
 //            auth.inMemoryAuthentication()
