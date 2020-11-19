@@ -19,6 +19,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 @SpringBootApplication
 @EnableResourceServer
@@ -52,6 +54,7 @@ public class SsoServerApplication {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        	//understand AuthenticationManager -> ProviderManager -> AuthenticationProvider
         	auth.authenticationProvider(this.myAuthenticationProvider);
 
         	//equal to this
@@ -67,6 +70,15 @@ public class SsoServerApplication {
 
     }
 
+    //understanding grant type
+    //https://oauth.net/2/grant-types/
+
+    //https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/  当resource server usage
+    //curl -u foo:bar -X POST http://localhost:8080/sso-server/oauth/token -H 'Content-Type: application/x-www-form-urlencoded'  -d 'grant_type=client_credentials&client_id=foo&&client_secret=bar'
+
+    //https://www.oauth.com/oauth2-servers/access-tokens/password-grant/ password grant type usage
+    //
+
     @Configuration
     @EnableAuthorizationServer
     protected static class OAuth2Config extends AuthorizationServerConfigurerAdapter {
@@ -74,13 +86,24 @@ public class SsoServerApplication {
     	@Autowired
     	private PasswordEncoder passwordEncoder;
 
+    	//这两步可以把普通的access token换成jwt token
+    	@Autowired
+    	private TokenStore tokenStore;
+    	@Autowired
+    	JwtAccessTokenConverter jwtAccessTokenConverter;
+
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
             clients.inMemory()
                     .withClient("foo")
                     .secret(passwordEncoder.encode("bar"))
-                    .authorizedGrantTypes("authorization_code", "refresh_token", "password")
-                    .scopes("user_info")
+//                    .authorizedGrantTypes("authorization_code", "refresh_token", "password")
+//                    .scopes("user_info")
+
+
+                  .authorizedGrantTypes("authorization_code", "refresh_token", "password", "client_credentials")
+                    .scopes("all")
+
                     .autoApprove(true)
                     .accessTokenValiditySeconds(60)
                     .refreshTokenValiditySeconds(60)
@@ -95,17 +118,21 @@ public class SsoServerApplication {
                     .allowFormAuthenticationForClients();
         }
 
-//    	@Override
-//    	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-//            DefaultTokenServices tokenServices = new DefaultTokenServices();
-//            tokenServices.setTokenStore(endpoints.getTokenStore());
-//            tokenServices.setSupportRefreshToken(true);
-//            tokenServices.setClientDetailsService(endpoints.getClientDetailsService());
-//            tokenServices.setTokenEnhancer(endpoints.getTokenEnhancer());
-//            tokenServices.setAccessTokenValiditySeconds(60);
-//            tokenServices.setRefreshTokenValiditySeconds(60);
-//
-//            endpoints.tokenServices(tokenServices);
-//    	}
+
+    	@Override
+    	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+            DefaultTokenServices tokenServices = new DefaultTokenServices();
+            tokenServices.setTokenStore(this.tokenStore);
+            tokenServices.setSupportRefreshToken(true);
+            tokenServices.setTokenEnhancer(this.jwtAccessTokenConverter);
+
+            tokenServices.setAccessTokenValiditySeconds(60);
+            tokenServices.setRefreshTokenValiditySeconds(60);
+
+
+            tokenServices.setClientDetailsService(endpoints.getClientDetailsService());
+
+            endpoints.tokenServices(tokenServices);
+    	}
     }
 }
