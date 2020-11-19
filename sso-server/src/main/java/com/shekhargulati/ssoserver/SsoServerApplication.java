@@ -128,6 +128,8 @@ public class SsoServerApplication {
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
             oauthServer
+            		//https://github.com/spring-projects/spring-security-oauth/issues/632
+            		//https://stackoverflow.com/questions/26862444/in-spring-security-oauth-how-do-you-use-a-passwordencoder-for-client-secrets
             		.passwordEncoder(this.passwordEncoder) //here to set ClientDetailsService's password encoder
                     .tokenKeyAccess("permitAll()")
                     .checkTokenAccess("isAuthenticated()")
