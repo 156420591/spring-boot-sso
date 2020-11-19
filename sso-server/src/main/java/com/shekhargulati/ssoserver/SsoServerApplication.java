@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,6 +41,12 @@ public class SsoServerApplication {
 
     	@Autowired
     	AuthenticationProvider myAuthenticationProvider;
+
+    	@Bean
+    	@Override
+		protected AuthenticationManager authenticationManager() throws Exception {
+			return super.authenticationManager();
+		}
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -76,11 +83,14 @@ public class SsoServerApplication {
     //https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/  当resource server usage
     //curl -u foo:bar -X POST http://localhost:8080/sso-server/oauth/token -H 'Content-Type: application/x-www-form-urlencoded'  -d 'grant_type=client_credentials&client_id=foo&&client_secret=bar'
 
+
     //https://www.oauth.com/oauth2-servers/access-tokens/password-grant/ password grant type usage
-    //
+    //https://www.techgeeknext.com/spring-boot-security/springboot-oauth2-password-grant
 
     @Configuration
     @EnableAuthorizationServer
+    //https://www.techgeeknext.com/spring-boot-security/springboot-oauth2-password-grant
+    //@EnableAuthorizationServer Authorization Server exposes endpoints for requesting access token (/oauth/token), checking the access token (/oauth/check_token), authorizing the client, etc
     protected static class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     	@Autowired
