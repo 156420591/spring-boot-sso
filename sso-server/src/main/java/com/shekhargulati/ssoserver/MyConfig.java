@@ -40,6 +40,20 @@ public class MyConfig {
 
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
+    	/**
+    	 * jwt how to use asymmetric keys
+    	 * https://www.baeldung.com/spring-security-oauth-jwt-legacy
+    	 * @Bean
+	public JwtAccessTokenConverter accessTokenConverter() {
+	    JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+	    KeyStoreKeyFactory keyStoreKeyFactory =
+	      new KeyStoreKeyFactory(new ClassPathResource("mytest.jks"), "mypass".toCharArray());
+	    converter.setKeyPair(keyStoreKeyFactory.getKeyPair("mytest"));
+	    return converter;
+	}
+    	 */
+
+
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey("mysignkey");
         return converter;
