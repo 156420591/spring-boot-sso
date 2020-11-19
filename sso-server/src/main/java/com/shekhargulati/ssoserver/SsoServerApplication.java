@@ -102,27 +102,33 @@ public class SsoServerApplication {
     	@Autowired
     	JwtAccessTokenConverter jwtAccessTokenConverter;
 
+    	@Autowired
+    	MyClientDetailsService myClientDetailsService;
+
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-            clients.inMemory()
-                    .withClient("foo")
-                    .secret(passwordEncoder.encode("bar"))
-//                    .authorizedGrantTypes("authorization_code", "refresh_token", "password")
-//                    .scopes("user_info")
+        	clients.withClientDetails(this.myClientDetailsService);
 
-
-                  .authorizedGrantTypes("authorization_code", "refresh_token", "password", "client_credentials")
-                    .scopes("all")
-
-                    .autoApprove(true)
-                    .accessTokenValiditySeconds(60)
-                    .refreshTokenValiditySeconds(60)
-                    ;
+//            clients.inMemory()
+//                    .withClient("foo")
+//                    .secret(passwordEncoder.encode("bar"))
+////                    .authorizedGrantTypes("authorization_code", "refresh_token", "password")
+////                    .scopes("user_info")
+//
+//
+//                  .authorizedGrantTypes("authorization_code", "refresh_token", "password", "client_credentials")
+//                    .scopes("all")
+//
+//                    .autoApprove(true)
+//                    .accessTokenValiditySeconds(60)
+//                    .refreshTokenValiditySeconds(60)
+//                    ;
         }
 
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
             oauthServer
+            		.passwordEncoder(this.passwordEncoder) //here to set ClientDetailsService's password encoder
                     .tokenKeyAccess("permitAll()")
                     .checkTokenAccess("isAuthenticated()")
                     .allowFormAuthenticationForClients();
@@ -140,7 +146,8 @@ public class SsoServerApplication {
             tokenServices.setRefreshTokenValiditySeconds(60);
 
 
-            tokenServices.setClientDetailsService(endpoints.getClientDetailsService());
+//            tokenServices.setClientDetailsService(endpoints.getClientDetailsService());
+            tokenServices.setClientDetailsService(this.myClientDetailsService);
 
             endpoints.tokenServices(tokenServices);
     	}
