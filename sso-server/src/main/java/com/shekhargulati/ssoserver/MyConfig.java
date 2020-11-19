@@ -40,8 +40,12 @@ public class MyConfig {
 
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
+    	/**how to set a url to get the json web public key
+    	 * https://www.baeldung.com/spring-security-oauth2-jws-jwk
+    	 */
+
     	/**
-    	 * jwt how to use asymmetric keys
+    	 * jwt how to use asymmetric keys, getKeyPair here is the Alias name when create our keys
     	 * https://www.baeldung.com/spring-security-oauth-jwt-legacy
     	 * @Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
