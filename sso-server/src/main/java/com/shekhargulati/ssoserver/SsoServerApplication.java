@@ -14,7 +14,12 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @SpringBootApplication
 @EnableResourceServer
@@ -44,12 +49,21 @@ public class SsoServerApplication {
             auth.inMemoryAuthentication()
                     .withUser("user")
                     .password(passwordEncoder().encode("password"))
-                    .roles("USER");
+                    .roles("USER")
+                    .and()
+                    .withUser("apple")
+                    .password(passwordEncoder().encode("apple"))
+                    .roles("APPLE")
+                    .and()
+                    .withUser("pear")
+                    .password(passwordEncoder().encode("pear"))
+                    .roles("PEAR")
+                    ;
         }
-        
+
         @Bean
-        public BCryptPasswordEncoder passwordEncoder(){ 
-            return new BCryptPasswordEncoder(); 
+        public BCryptPasswordEncoder passwordEncoder(){
+            return new BCryptPasswordEncoder();
         }
     }
 
@@ -66,6 +80,8 @@ public class SsoServerApplication {
                     .withClient("foo")
                     .secret(passwordEncoder.encode("bar"))
                     .authorizedGrantTypes("authorization_code", "refresh_token", "password")
+                    .accessTokenValiditySeconds(60)
+                    .refreshTokenValiditySeconds(60)
                     .scopes("user_info")
                     .autoApprove(true);
         }
@@ -76,6 +92,30 @@ public class SsoServerApplication {
                     .tokenKeyAccess("permitAll()")
                     .checkTokenAccess("isAuthenticated()")
                     .allowFormAuthenticationForClients();
+        }
+        @Override
+        public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+            DefaultTokenServices services = new DefaultTokenServices();
+            services.setAccessTokenValiditySeconds(60);
+            services.setRefreshTokenValiditySeconds(60);
+            services.setTokenStore(this.tokenStore());
+            services.setTokenEnhancer(this.jwtAccessTokenConverter());
+            services.setClientDetailsService(endpoints.getClientDetailsService());
+
+            endpoints.tokenServices(services);
+        }
+
+
+        @Bean
+        TokenStore tokenStore() {
+            return new JwtTokenStore(jwtAccessTokenConverter());
+        }
+
+        @Bean
+        JwtAccessTokenConverter jwtAccessTokenConverter() {
+            JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+            converter.setSigningKey("testkey");
+            return converter;
         }
 
     }
