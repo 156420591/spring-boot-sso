@@ -42,6 +42,7 @@ public class SsoServerApplication {
     	@Autowired
     	AuthenticationProvider myAuthenticationProvider;
 
+    	//this would be the global AuthenticationManager
     	@Bean
     	@Override
 		protected AuthenticationManager authenticationManager() throws Exception {
@@ -86,6 +87,8 @@ public class SsoServerApplication {
 
     //https://www.oauth.com/oauth2-servers/access-tokens/password-grant/ password grant type usage
     //https://www.techgeeknext.com/spring-boot-security/springboot-oauth2-password-grant
+    //we should inject AuthenticationManager first, then we can use password grant workflow to get access token
+    //curl -u foo:bar -X POST http://localhost:8080/sso-server/oauth/token -H 'Content-Type: application/x-www-form-urlencoded'  -d 'grant_type=password&username=user&password=password&client_id=foo&client_secret=bar'
 
     @Configuration
     @EnableAuthorizationServer
@@ -95,6 +98,9 @@ public class SsoServerApplication {
 
     	@Autowired
     	private PasswordEncoder passwordEncoder;
+
+    	@Autowired
+    	AuthenticationManager authenticationManager;
 
     	//这两步可以把普通的access token换成jwt token
     	@Autowired
@@ -146,6 +152,8 @@ public class SsoServerApplication {
 
             tokenServices.setAccessTokenValiditySeconds(60);
             tokenServices.setRefreshTokenValiditySeconds(60);
+
+            tokenServices.setAuthenticationManager(this.authenticationManager);
 
 
 //            tokenServices.setClientDetailsService(endpoints.getClientDetailsService());
