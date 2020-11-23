@@ -12,7 +12,8 @@ app = Flask(__name__)
 client_id = "foo"
 client_secret = "bar"
 authorization_base_url = 'http://localhost:8080/sso-server/oauth/authorize'
-token_url = 'http://localhost:8080/sso-server/oauth/access_token'
+# token_url = 'http://localhost:8080/sso-server/oauth/access_token'
+token_url = 'http://localhost:8080/sso-server/oauth/token'
 redirect_uri = 'http://localhost:8083/callback'
 state = ''
 
@@ -23,11 +24,8 @@ def demo():
     using an URL with a few key OAuth parameters.
     """
     github = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    print '====================1'
     authorization_url, state = github.authorization_url(authorization_base_url)
     print 'Please go here and authorize,', authorization_url
-    print '===========1 here state get:', state
-    sys.stdout.flush()
 
     # State is used to prevent CSRF, keep this for later.
     session['oauth_state'] = state
@@ -44,12 +42,9 @@ def callback():
     in the redirect URL. We will use that to obtain an access token.
     """
 
-    print '===========2 here state get:', session['oauth_state']
-    sys.stdout.flush()
     github = OAuth2Session(client_id, state=session['oauth_state'])
-    # token = github.fetch_token(token_url, client_secret=client_secret,
-                               # authorization_response="http://localhost:8083/")
-    token = github.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
+    token = github.fetch_token(token_url, client_secret=client_secret,
+                               authorization_response=request.url)
 
     # At this point you can fetch protected resources but lets save
     # the token and show how this is done from a persisted token
@@ -64,6 +59,7 @@ def profile():
     """Fetching a protected resource using an OAuth 2 token.
     """
     github = OAuth2Session(client_id, token=session['oauth_token'])
+    # return jsonify(github.get('https://api.github.com/user').json())
     return "hello, in python"
 
 
