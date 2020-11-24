@@ -44,12 +44,21 @@ public class SsoServerApplication {
             auth.inMemoryAuthentication()
                     .withUser("user")
                     .password(passwordEncoder().encode("password"))
-                    .roles("USER");
+                    .roles("USER")
+                    .and()
+                    .withUser("apple")
+                    .password(passwordEncoder().encode("apple"))
+                    .roles("APPLE")
+                    .and()
+                    .withUser("pear")
+                    .password(passwordEncoder().encode("pear"))
+                    .roles("PEAR")
+                    ;
         }
-        
+
         @Bean
-        public BCryptPasswordEncoder passwordEncoder(){ 
-            return new BCryptPasswordEncoder(); 
+        public BCryptPasswordEncoder passwordEncoder(){
+            return new BCryptPasswordEncoder();
         }
     }
 
