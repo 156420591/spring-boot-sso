@@ -15,6 +15,18 @@ token_url = 'http://localhost:8080/sso-server/oauth/token'
 redirect_uri = 'http://localhost:8083/login'
 state = ''
 
+@app.route("/apple/hello", methods=["GET"])
+def apple_hello():
+    if 'oauth_token' not in session:
+        return redirect('/')
+    return "apple_hello"
+    
+@app.route("/pear/hello", methods=["GET"])
+def pear_hello():
+    if 'oauth_token' not in session:
+        return redirect('/')
+    return "pear_hello"
+
 @app.route("/")
 def demo():
 
@@ -24,7 +36,7 @@ def demo():
     session['oauth_state'] = state
     return redirect(authorization_url)
 
-    
+
 
 @app.route("/login", methods=["GET"])
 def login():
@@ -34,6 +46,9 @@ def login():
 
     session['oauth_token'] = token
     print '=================token:', token
+    sys.stdout.flush()
+    userinfo = github.get('http://localhost:8080/sso-server/user/me')
+    print '=================userinfo:', userinfo.content
     sys.stdout.flush()
 
     return redirect(url_for('.profile'))
