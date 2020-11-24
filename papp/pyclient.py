@@ -2,6 +2,7 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, request, redirect, session, url_for
 from flask.json import jsonify
 import os, sys
+import json
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
@@ -48,8 +49,12 @@ def login():
     print '=================token:', token
     sys.stdout.flush()
     userinfo = github.get('http://localhost:8080/sso-server/user/me')
-    print '=================userinfo:', userinfo.content
+    detail = json.loads(userinfo.content)
+    done = detail.get('authorities')
+    fuser = done[0].get('authority')
+    print '=================userinfo:', fuser
     sys.stdout.flush()
+    session['urole'] = fuser
 
     return redirect(url_for('.profile'))
 
