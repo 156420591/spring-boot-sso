@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 
 //https://docs.spring.io/spring-security/site/docs/3.0.x/reference/technical-overview.html#d0e1543
@@ -54,9 +56,43 @@ public class AuthenticationSample1 {
                 System.out.println("Authentication failed: " + e.getMessage());
             }
         }
+
+        Authentication storedAuth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("getName:" + storedAuth.getName());
+        System.out.println("getPrincipal:" + storedAuth.getPrincipal().toString());
+        System.out.println("getCredentials:" + storedAuth.getCredentials().toString());
+        System.out.println("getAuthorities:" + storedAuth.getAuthorities().toString());
+
         System.out.println("Successfully authenticated. Security context contains: " +
                 SecurityContextHolder.getContext().getAuthentication());
+
+        //https://www.appsdeveloperblog.com/spring-security-get-authenticated-principal-details/
+        //getName vs getPrincipal, not working
+//        if(! (storedAuth instanceof AnonymousAuthenticationToken)) {
+//            UserDetails ud = (UserDetails)storedAuth.getPrincipal();
+//
+//            System.out.println("getUsername:" + ud.getUsername());
+//            System.out.println("getPassword:" + ud.getPassword());
+//            System.out.println("isEnabled:" + ud.isEnabled());
+//            System.out.println("getAuthorities:" + ud.getAuthorities().toString());
+//        }
 
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
