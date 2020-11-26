@@ -23,6 +23,8 @@ class SampleAuthenticationManager implements AuthenticationManager{
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         List<GrantedAuthority> myau = new ArrayList<>();
         myau.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+        //name == password, password is always plaintext, while we store hashed password to db, so we can equal as hashed(password)==db_password
         if(authentication.getName().equals(authentication.getCredentials())) {
             return new UsernamePasswordAuthenticationToken(authentication.getName(), authentication.getCredentials(), myau);
         }
