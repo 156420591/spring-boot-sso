@@ -18,6 +18,17 @@ public class App1Controller {
 
 
  */
+
+
+/**
+ *
+ *https://dzone.com/articles/spring-boot-how-to-solve-oauth2-redirect-uri-misma
+ * oauth2 client如果使用https或非 /login作为默认redirect_uri的话，则必须要配置下面两个参数(因为如果是https不配置的话，会默认跳转到http://xxx:port/login)
+security.oauth2.client.preEstablishedRedirectUri=http://localhost:9090/callback
+security.oauth2.client.useCurrentUri=false
+ *
+ */
+
 /**
  * @author ak
  *
